@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Daily Report From online scraping</title>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-route.js"></script>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+<style type="text/css">
+	tfoot input {
+		width: 100%;
+		padding: 3px;
+		box-sizing: border-box;
+	}
+</style>
+</head>
+<body>
+<h2>{title}</h2><!--title-->
+<table id="table_id" class="display">
+    <thead>{columns}</thead><!--<tr><th>column1</th><th>...</tr>-->
+    <tfoot>{columns}</tfoot>
+    <tbody>{grid_datas}</tbody><!--<tr><td>data1</td><td>...</tr>-->
+</table>
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#table_id tfoot th").each( function () {
+    var title = $(this).text();
+    $(this).html( "<input type='text' placeholder='Search "+title+"' />" );
+  } );
+  var table = $("#table_id").DataTable();
+  table.columns().every( function () {
+    var that = this;
+    $( "input", this.footer() ).on( "keyup change", function () {
+      if ( that.search() !== this.value ) {
+        that.search( this.value ).draw();
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>

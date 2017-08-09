@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Daily Report From online scraping</title>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-route.js"></script>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+<style type="text/css">
+	tfoot input{
+		width: 100%;
+		padding: 3px;
+		box-sizing: border-box;
+	}
+	.tick line {
+		fill: none;
+		stroke: lightgray;
+		stroke-dasharray: 5 5
+	}
+	path.domain{
+		display: none;
+	}
+</style>
+</head>
+<body>
+<h2>{title}</h2><!--title-->
+<div id="controls"></div><div id="chart"></div>
+<div>
+<table id="table_id" class="display">
+    <thead>{columns}</thead><!--<tr><th>column1</th><th>...</tr>-->
+    <tfoot>{columns}</tfoot>
+    <tbody>{grid_datas}</tbody><!--<tr><td>data1</td><td>...</tr>-->
+</table>
+</div>
+<script type="text/javascript">
+var svg = null;
+var table_header = [];
+var chart_header = [];
+var table_data = [];
+$(document).ready(function() {
+	$("#table_id tfoot th").each( function () {
+		var title = $(this).text();    $(this).html( "<input type='text' placeholder='Search "+title+"' />" );  } );
+		var table = $("#table_id").DataTable();
+		table.columns().every( function () {
+			var that = this;    $( "input", this.footer() ).on( "keyup change", function () {
+				if ( that.search() !== this.value ) {
+					that.search( this.value ).draw(); 
+				}
+			});
+		});
+		/*테이블 헤더 생성*/
+		table.columns().header().each(function(value){
+			table_header.push(value.innerText);
+			if(value.innerText.indexOf("fare") >= 0){
+				chart_header.push(value.innerText);
+				}
+			});
+		/* 테이블 데이터 생성 */
+		table.rows().nodes().each(function(value,i,api){
+			var row_data = [];
+			for(var i = 0 , len = value.cells.length ; i < len ; i++){
+				row_data.push(value.cells[i].innerText);
+			}
+			table_data.push(row_data);  });  draw_controls();
+});
+/*select box, button*/
+function draw_controls(){
+	var flt_set = new Set();
+	for(var i = 0, len = table_data.length ; i < len ; i++){
+		flt_set.add(table_data[i][3]);
+	}
+	var flt_list = [];
+	flt_set.forEach(function(d){
+		flt_list.push(d);
+	});
+	d3.select("#controls").append("b").html("select flight number and push chart button : ");
+	var flt_options = d3.select("#controls").append("select").attr("name","flt_options");
+	flt_options.selectAll("option").data(flt_list).enter().append("option")
+		.attr("value",function(d){return d;}).html(function(d){return d;});
+	d3.select("#controls").append("button").html("chart").on("click",draw_chart);
+	return flt_list;
+}
+function draw_chart(){
+	var selected_option = d3.select("#controls select").selectAll("option").nodes().filter(function(d){ return d.selected;});
+	var selected_data = [];
+	for(var i = 0, len = table_data.length; i < len; i ++){
+		if(table_data[i][3] == selected_option[0].value){
+			/*경쟁사 숫자 조정시 고려한 처리로 변경 필요*/ 
+			var selected_list = [table_data[i][0],table_data[i][5]];/*ZE*/
+			/*other airline*/
+			for(var j = 6, henader_len = table_header.length; j < henader_len ; j++){
+				if(table_header[j].indexOf("fare") >= 0){
+					selected_list.push(table_data[i][j]);
+				}
+			}
+			selected_data.push(selected_list);
+		}
+	}
+	var w = 1000, h = 500, pad = 40;
+	svg = init_draw("#chart",w,h);
+	var x_extent = [0,selected_data.length];
+	var x_range = [pad,w-pad];
+	var x_scale = linear_scale(x_extent,x_range);
+	var y_max = d3.max(table_data,function(d){
+		return parseInt(d[5]);
+	});
+	var y_extent = [0,y_max+y_max/3];
+	var y_range = [h-pad,pad];
+	var y_scale = linear_scale(y_extent,y_range);
+	linear_axis(x_extent,x_range,4,pad);
+	linear_axis(y_extent,y_range,2,pad);
+	/*경쟁사 숫자 조정시 고려한 처리로 변경 필요*/
+	for(var i = 0, len=chart_header.length; i < len;i++){
+		var chart_data = [];
+		for(var j = 0, sel_len=selected_data.length; j < sel_len ; j++){
+			chart_data.push({x:x_scale(j),y:y_scale(parseInt(selected_data[j][1+i].replace(",",""))),
+				r:5,fare:selected_data[j][1+i],date:selected_data[j][0]});
+		}
+		draw_line(chart_header[i],chart_data,d3.schemeCategory10[i],2);
+		draw_circle("_"+chart_header[i],chart_data,d3.schemeCategory10[i]);
+		svg.append("text").attr("x",100+80*i).attr("y",20).attr("stroke",d3.schemeCategory10[i]).text(chart_header[i]);
+	}
+	return selected_data;
+}
+/* width, height 로 svg canvas 초기화 */
+function init_draw(parent,w,h){
+	d3.select(parent).select("svg").remove();
+	return d3.select(parent).append("svg").attr("width",w).attr("height",h);
+}
+/* x,y 값 형태의 데이터를 받앙 color로 line plot */
+function draw_line(cname,cdata,ccolor,cwidth){
+	var cline = d3.line().curve(d3.curveMonotoneX)
+		.x(function(d){ return d.x; }).y(function(d){ return d.y; });
+	svg.append("g").append("path")
+		.attr("class", cname+"_line").attr("d", cline(cdata))
+		.attr("stroke",ccolor).attr("stroke-width",cwidth).attr("fill","none");
+}
+/* r,x,y 값 형태의 데이터를 받아 color 로 circle plot*/
+var selected_line = null;
+function draw_circle(cname,cdata,ccolor){
+	svg.append("g").selectAll(cname).data(cdata).enter()
+		.append("circle").attr("class",cname+"_circle")
+		.attr("r",function(d){ return d.r;})
+		.attr("cx",function(d){return d.x;})
+		.attr("cy",function(d){return d.y;})
+		.attr("fill",ccolor)
+		.append("title").text(function(d){
+			return "("+d.date+","+d.fare+")";
+		})
+		.on("mouseover",function(d){
+			selected_line = this;
+		});
+}
+/* domain extent와 range extent를 이용하여 linear scale 생성 */
+function linear_scale(d_extent,r_extent){
+	return d3.scaleLinear().domain(d_extent).range(r_extent);
+}
+/* domain extent와 range extent, direction를 이용하여  축 생성 */
+/* direction : 1/2/3/4 - left,right,top,bottom */
+/* axis position : x, y */
+function linear_axis(d_extent,r_extent,dir,pad){
+	var ls = d3.scaleLinear().domain(d_extent).range(r_extent);
+	var axis = null, axis_id = null;
+	var svg_w = parseInt(svg.attr("width"));
+	var svg_h = parseInt(svg.attr("height"));
+	var x = 0,y=0, tick_size = 0;
+	if(dir == 1){
+		axis = d3.axisLeft();
+		axis_id = "x_axis";
+		x = pad;
+		tick_size = -(svg_w - 2*pad);
+	 }else if(dir == 2){
+	 	axis = d3.axisRight();
+	 	axis_id = "x_axis";
+	 	x = svg_w-pad;
+	 	tick_size = -(svg_w - 2*pad);
+	 }else if(dir == 3){
+	 	axis = d3.axisTop();
+	 	axis_id = "y_axis";
+	 	y = pad;
+	 	tick_size = -(svg_h - 2*pad);
+	 }else if(dir == 4){
+	 	axis = d3.axisBottom();
+	 	axis_id = "y_axis";
+	 	y = svg_h-pad;
+	 	tick_size = -(svg_h - 2*pad);
+	 }else{
+	 	axis = d3.axisBottom();
+	 	axis_id = "x_axis";
+	 	y = svg_h-pad;
+	 	tick_size = -(svg_h - 2*pad);
+	 }
+	 axis.scale(ls).tickSize(tick_size);
+	 svg.append("g").attr("id",axis_id)
+	 	.attr("transform","translate("+x+","+y+")").call(axis);
+}
+</script>
+</body>
+</html>

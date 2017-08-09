@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "__comment_handlers_level":"logging.DEBUG 10 logging.INFO 20 logging.WARNING 30 logging.ERROR 40",
+  "__comment_root_level":"dev/test logging.DEBUG, prod logging.INFO",
+  "__comment_log_file":"dev/test tmp/scrap_batch_job.log, prod log/scrap_batch_job.log",
+  "formatters": {
+    "f1": {
+      "format": "%(asctime)s %(name)-8s %(levelname)-8s %(message)s"
+    },
+    "f2": {
+      "format": "%(asctime)s %(name)-8s %(levelname)-8s| %(lineno)s::%(message)s"
+    }
+  },
+  "handlers": {
+    "h1": {
+      "class": "logging.StreamHandler",
+      "formatter": "f1",
+      "level": 10
+    },
+    "h2": {
+      "class": "logging.FileHandler",
+      "filename": "tmp/db_batch_job.log",
+      "formatter": "f2",
+      "level": 20
+    },
+    "h3": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "filename": "tmp/db_batch_job.log",
+      "maxBytes": 10240,
+      "backupCount": 10,
+      "formatter": "f2",
+      "level": 20
+    }
+  },
+  "root": {
+    "handlers": [
+      "h1",
+      "h3"
+    ],
+    "level": 10
+  }
+}

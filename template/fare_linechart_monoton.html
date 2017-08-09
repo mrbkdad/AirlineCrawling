@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <title>Fare Data Report From online scraping</title>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.9/angular-route.js"></script>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script type="text/javascript" charset="utf8" src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+<style type="text/css">
+.axis--x path {
+  display: auto;
+}
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+.tick line {
+  fill: none;
+  stroke: lightgray;
+  stroke-dasharray: 5 5
+}
+path.domain{
+  display: none;
+}
+dl {
+   position: relative;
+}
+dt {
+  float: left;
+  height: 30px;
+  width: 50px;
+  z-index: 9;
+  position: relative;
+  line-height: 30px; 
+  box-sizing: border-box; 
+  border: 1px solid #ddd; 
+  text-align: center; 
+  font-size: 16px; 
+  cursor:pointer;
+}
+dt.selected{
+  background-color: darkgrey;
+}
+dd {
+   position: absolute;
+   padding-top: 30px;
+   background-color: white;
+   width: 1280px;
+   height: 720px;
+}
+dd.hidden {
+   display: none;
+}
+</style>
+</head>
+<body>
+검색 조건
+<h2>{condition_data}</h2>
+<dl>
+   <dt class="selected">Chart</dt>
+   <dd>각사 가격 비교<br>
+    <div id="controls"></div>
+    <svg width="1200" height="710"></svg>
+   </dd>
+   <dt>Grid</dt>
+   <dd class="hidden">가격 데이터<br>
+    <table id="table_id" class="display">
+        <thead><tr><th>date</th><th>airline</th><th>Min</th><th>Avg</th><th>Max</th></tr></thead>
+        <tbody>{grid_data}</tbody>
+    </table>
+   </dd>
+</dl>
+<script type="text/javascript">
+var $menuEle = $("dt");
+$menuEle. click(function() {
+  $("dt").removeClass("selected");
+  $(this).addClass("selected");
+  $("dd").addClass("hidden");
+  $(this).next().removeClass("hidden");
+});
+$(document).ready( function () {
+    $("#table_id").DataTable();
+});
+var chart_values = {chart_data};
+var svg = d3.select("svg");
+var margin = {top: 20, right: 50, bottom: 30, left: 50};
+var width = svg.attr("width") - margin.left - margin.right;
+var height = svg.attr("height") - margin.top - margin.bottom;
+var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var parseTime = d3.timeParse("%Y%m%d");
+var x = d3.scaleTime().range([0, width]);/*.tickFormat(d3.time.format("%m/%y"));*/
+var y = d3.scaleLinear().range([height, 0]);
+var z = d3.scaleOrdinal(d3.schemeCategory10);
+var line = d3.line().curve(d3.curveMonotoneX).x(function(d){return x(parseTime(d.date));}).y(function(d){return y(d.fares);});
+x.domain([
+  d3.min(chart_values, function(c) { return d3.min(c.values, function(d) { return parseTime(d.date); }); }),
+  d3.max(chart_values, function(c) { return d3.max(c.values, function(d) { return parseTime(d.date); }); })
+]);
+y.domain([
+  d3.min(chart_values, function(c) { return d3.min(c.values, function(d) { return d.fares-5000; }); }),
+  d3.max(chart_values, function(c) { return d3.max(c.values, function(d) { return d.fares+5000; }); })
+]);
+z.domain(chart_values.map(function(c) { return c.id; }));
+g.append("g").attr("class", "axis axis--x").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x).tickSize(-height));
+g.append("g").attr("class", "axis axis--y").call(d3.axisLeft(y).tickSize(-width)).append("text").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", "0.71em").attr("fill", "#000").text("Fare");
+var legend_fields = [];
+var button_fields = ["Reset","Min","Avg","Max"];
+for(var i = 0;i < chart_values.length;i++){
+    legend_fields.push(chart_values[i].id);
+    if(button_fields.indexOf(chart_values[i].id.substring(0,2)) < 0){
+      button_fields.push(chart_values[i].id.substring(0,2));
+    }
+}
+var legend = g.selectAll(".legend").data(legend_fields.sort()).enter().append("g").attr("class","legend").on("click",function(d){legend_click(d);});
+legend.append("text").attr("transform",function(d,i){return "translate("+(width)+","+(i*margin.bottom+100)+")";})
+  .attr("x", 3).attr("dy", "0.35em").style("font","12px sans-serif").style("font-weight", "bold").style("fill",function(d){return z(d);})
+  .style("cursor","pointer").text(function(d){return d;});
+
+var controls = d3.select("#controls").selectAll("button").data(button_fields).enter().append("button").attr("ison","1").html(function(d){return d;});
+controls.on("click",function(d){controls_click(this);});
+
+var line = d3.line().curve(d3.curveMonotoneX).x(function(d){return x(parseTime(d.date));}).y(function(d){return y(d.fares);});
+var check_list = [];
+function draw_line(){
+  d3.selectAll(".fare").remove();
+  for(var i = 0;i < chart_values.length;i++){
+    if(check_list.indexOf(chart_values[i].id)>=0){ continue; }
+    var fare = g.selectAll(".fare_"+chart_values[i].id).data(chart_values[i].values).enter().append("g").attr("class", "fare");
+    fare.append("path").attr("class", "line").attr("d",line(chart_values[i].values)).style("stroke",z(chart_values[i].id));
+  }
+}
+draw_line();
+function legend_click(checked_data){
+  checked_index = check_list.indexOf(checked_data);
+  if( checked_index>= 0){ check_list.splice(checked_index,1);
+  }else{ check_list[check_list.length] = checked_data; }
+  draw_line();
+} 
+function controls_click(clicked_control){
+  var clicked_button = d3.select(clicked_control);
+  var clicked_data = clicked_button.html();
+  check_list = [];
+  if(clicked_button.html() != "Reset"){
+    for( i in legend_fields ){
+      if(legend_fields[i].indexOf(clicked_data) >= 0){continue;}
+      check_list.push(legend_fields[i]);
+    }
+  }
+  draw_line();
+}
+</script>
+</body>
+</html>
