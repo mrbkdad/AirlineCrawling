@@ -1,0 +1,35 @@
+{
+  "CRAWL_SITE_CODES":[
+      ["0", "IP", "crawling_IP_dom", false],
+      ["1", "IP", "crawling_IP_int", false],
+      ["0", "7C", "crawling_7C_dom", true],
+      ["0", "TW", "crawling_TW_dom", true],
+      ["0", "LJ", "crawling_LJ_dom", true],
+      ["0", "BX", "crawling_BX_dom", true],
+      ["0", "ZE", "crawling_ZE_dom_int", true]
+    ],
+  "CRAWL_ROUTES": {
+    "CJJ-CJU": ["0", "KO", "CJJ", "KO", "CJU"],
+    "KUV-CJU": ["0", "KO", "KUV", "KO", "CJU"],
+    "ICN-NRT": ["1", "KO", "ICN", "JP", "NRT"],
+    "PUS-CJU": ["0", "KO", "PUS", "KO", "CJU"],
+    "GMP-CJU": ["0", "KO", "GMP", "KO", "CJU"],
+    "GMP-PUS": ["0", "KO", "GMP", "KO", "PUS"]
+  },
+  "ROUTE_SITE_MAP": {
+    "CJJ-CJU": ["IP", "7C", "LJ", "OZ", "KE", "ZE"],
+    "KUV-CJU": ["IP", "KE", "ZE"],
+    "ICN-NRT": ["IP", "7C", "TW", "LJ", "ZE"],
+    "PUS-CJU": ["IP", "7C", "LJ", "OZ", "KE", "ZE"],
+    "GMP-CJU": ["IP", "7C", "TW", "LJ", "BX", "ZE"],
+    "GMP-PUS": ["IP", "7C", "BX", "OZ", "ZE"]
+  },
+  "SCRAP_SITE_CODES": [
+    ["0", "IP", "scraping_IP_dom"], ["1", "IP", "scraping_IP_int"],
+    ["0", "TW", "scraping_TW_dom"], ["1", "TW", "scraping_TW_int"],
+    ["0", "7C", "scraping_7C_dom"], ["1", "7C", "scraping_7C_int"],
+    ["0", "LJ", "scraping_LJ_dom"], ["1", "LJ", "scraping_LJ_int"],
+    ["0", "BX", "scraping_BX_dom"], ["1", "BX", "scraping_BX_int"],
+    ["0", "ZE", "scraping_ZE_dom"], ["1", "ZE", "scraping_ZE_int"]
+  ]
+}
