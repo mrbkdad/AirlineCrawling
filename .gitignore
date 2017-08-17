@@ -1,0 +1,15 @@
+# ignore all files in the chart_test, crawl,  db_ok, excel, html, join_data,
+# requirement, scrap_data, scrap_ok, scrap_test, tmp, directory
+
+chart_test/
+crawl/
+db_ok/
+excel/
+html/
+join_data/
+requirement/
+scrap_data/
+scrap_ok/
+scrap_test/
+tmp/
+/*.db
