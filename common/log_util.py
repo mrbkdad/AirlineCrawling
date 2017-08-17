@@ -7,8 +7,8 @@ from logging.config import dictConfig
 def logger_initialize(file=None):
     if file is None:
         file = 'logger_setting.json'
-    logger = common_logger(file)
     global logger
+    logger = common_logger(file)
     
 def common_logger(file):
     ## 환경 세팅 - JSON 파일로 부터 처리
