@@ -559,8 +559,8 @@ def scraping_KE_dom_int(head,raw_data):
             sch.append(flt['departure'][:4]+flt['departure'][5:7]+flt['departure'][8:10])
             sch.append(flt['departureAirportCode'])
             sch.append(flt['destinationAirportCode'])
-            sch.append(flt['departure'][11:16])
-            sch.append(flt['arrival'][11:16])
+            sch.append(flt['departure'][11:13]+flt['departure'][14:16])
+            sch.append(flt['arrival'][11:13]+flt['arrival'][14:16])
             sch.extend(fare)
             ## ECONOMYY 클래스에 대한 좌석 수 추가 - 노멀 클래스
             ## sch.append(schedule['remainingSeatsByBookingClass'].get('ECONOMYY',0))

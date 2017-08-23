@@ -21,6 +21,8 @@ SCRAP_DATA_DIR   = 'scrap_data'    ## 스크래핑 완료후 CSV 파일 저장
 SCRAP_OK_DIR     = 'scrap_ok'      ## 스크래핑 완료후 raw_data 파일 이동 저장
 DB_OK_DIR        = 'db_ok'         ## 데이터베이스 처리 오류시 csv 파일 이동 저장
 NODATA_DIR       = 'crawl/nodata'  ## 스크래핑후 잔존 파일, 데이터가 존재하지 않음
+JOIN_DIR         = 'join_data'     ## 로드 팩터등 추가 처리를 위한 파일 체크 폴더
+JOIN_OK_DIR      = 'join_data/join_ok'  ## 추가 파일 처리후 이동 폴더
 
 ## 오류 처리 폴더 : 오류 발생시 해당 파일을 해당 폴더에 유지, 해당 폴더 모니터링시 일정기간 이상 보관된 파일을 오류 처리 방향으로 진행
 #SCRAP_ERROR_DIR  = 'scrap_error' ## 스크래핑시 오류 raw_data 파일 이동 저장

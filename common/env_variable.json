@@ -9,6 +9,10 @@
       ["0", "LJ", "crawling_LJ_dom", true],
       ["1", "LJ", "crawling_LJ_int", true],
       ["0", "BX", "crawling_BX_dom", true],
+      ["0", "KE", "crawling_KE_dom", true],
+      ["1", "KE", "crawling_KE_int", true],
+      ["0", "OZ", "crawling_OZ_dom", true],
+      ["1", "OZ", "crawling_OZ_int", true],
       ["0", "ZE", "crawling_ZE_dom_int", true],
       ["1", "ZE", "crawling_ZE_dom_int", true]
     ],
@@ -27,6 +31,8 @@
     ["0", "7C", "scraping_7C_dom"], ["1", "7C", "scraping_7C_int"],
     ["0", "LJ", "scraping_LJ_dom"], ["1", "LJ", "scraping_LJ_int"],
     ["0", "BX", "scraping_BX_dom"], ["1", "BX", "scraping_BX_int"],
+    ["0", "KE", "scraping_KE_dom_int"], ["1", "ZE", "scraping_KE_dom_int"],
+    ["0", "OZ", "scraping_OZ_dom_int"], ["1", "ZE", "scraping_OZ_dom_int"],
     ["0", "ZE", "scraping_ZE_dom_int"], ["1", "ZE", "scraping_ZE_dom_int"]
   ]
 }
